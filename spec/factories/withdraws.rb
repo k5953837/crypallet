@@ -1,24 +1,24 @@
 # == Schema Information
 #
-# Table name: wallets
+# Table name: withdraws
 #
 #  id         :bigint           not null, primary key
-#  balance    :integer          default(0)
+#  amount     :integer
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  user_id    :bigint           not null
 #
 # Indexes
 #
-#  index_wallets_on_user_id  (user_id)
+#  index_withdraws_on_user_id  (user_id)
 #
 # Foreign Keys
 #
 #  fk_rails_...  (user_id => users.id)
 #
 FactoryBot.define do
-  factory :wallet do
-    balance { Faker::Number.number(digits: 3) }
+  factory :withdraw do
+    amount { Faker::Number.number(digits: 3) }
     user
   end
 end

@@ -10,10 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_11_03_130923) do
+ActiveRecord::Schema.define(version: 2021_11_03_172718) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "deposits", force: :cascade do |t|
+    t.integer "amount"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["user_id"], name: "index_deposits_on_user_id"
+  end
+
+  create_table "transfers", force: :cascade do |t|
+    t.integer "amount"
+    t.bigint "from_user_id", null: false
+    t.bigint "to_user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["from_user_id"], name: "index_transfers_on_from_user_id"
+    t.index ["to_user_id"], name: "index_transfers_on_to_user_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "name"
@@ -29,5 +47,17 @@ ActiveRecord::Schema.define(version: 2021_11_03_130923) do
     t.index ["user_id"], name: "index_wallets_on_user_id"
   end
 
+  create_table "withdraws", force: :cascade do |t|
+    t.integer "amount"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["user_id"], name: "index_withdraws_on_user_id"
+  end
+
+  add_foreign_key "deposits", "users"
+  add_foreign_key "transfers", "users", column: "from_user_id"
+  add_foreign_key "transfers", "users", column: "to_user_id"
   add_foreign_key "wallets", "users"
+  add_foreign_key "withdraws", "users"
 end
