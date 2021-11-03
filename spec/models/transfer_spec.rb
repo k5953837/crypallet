@@ -36,7 +36,7 @@ RSpec.describe Transfer, type: :model do
 
   # Validations specs
   context 'Validations specs' do
-    it { should validate_numericality_of(:amount).is_greater_than_or_equal_to(0) }
+    it { should validate_numericality_of(:amount).is_greater_than(0) }
     it { should validate_presence_of(:amount) }
   end
 
@@ -44,8 +44,31 @@ RSpec.describe Transfer, type: :model do
   context 'Scopes specs' do
   end
 
-  # Class methods specs
-  context 'Class method specs' do
+  # Callbacks specs
+  context 'Callbacks specs' do
+    describe 'before_create' do
+      it '#check_amount' do
+        user1 = create(:user, :with_wallet, :with_deposit)
+        user2 = create(:user, :with_wallet, :with_deposit)
+        transfer = build :transfer, from_user: user1, to_user: user2, amount: user1.wallet.balance + 1
+        transfer.send(:check_amount)
+        expect(transfer.errors.full_messages).to include('Amount must be less than balance')
+      end
+    end
+
+    describe 'after_create' do
+      it '#update_user_balance' do
+        user1 = create(:user, :with_wallet, :with_deposit)
+        user1_original_balance = user1.wallet.balance
+        user2 = create(:user, :with_wallet, :with_deposit)
+        user2_original_balance = user2.wallet.balance
+        transfer_amount = user1_original_balance - 1
+        transfer = build :transfer, from_user: user1, to_user: user2, amount: transfer_amount
+        transfer.send(:update_user_balance)
+        expect(user1.wallet.reload.balance).to eq(user1_original_balance - transfer_amount)
+        expect(user2.wallet.reload.balance).to eq(user2_original_balance + transfer_amount)
+      end
+    end
   end
 
   # Instance methods specs

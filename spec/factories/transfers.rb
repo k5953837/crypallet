@@ -21,8 +21,8 @@
 #
 FactoryBot.define do
   factory :transfer do
-    amount { Faker::Number.number(digits: 3) }
-    from_user
-    to_user
+    amount { Faker::Number.number(digits: 2) }
+    from_user { create(:user, :with_wallet, :with_deposit) }
+    to_user { create(:user, :with_wallet, :with_deposit) }
   end
 end

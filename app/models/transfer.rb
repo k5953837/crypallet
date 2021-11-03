@@ -35,9 +35,33 @@ class Transfer < ApplicationRecord
   # Association through macros
 
   # Validation macros
-  validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :amount, presence: true, numericality: { greater_than: 0 }
 
   # Callbacks
+  before_create :check_amount
+  after_create :update_user_balance
 
   # Other
+
+  private
+
+  def check_amount
+    return errors.add(:amount, 'must be less than balance') if amount > from_user.wallet.balance
+  end
+
+  def update_user_balance
+    # process from_user balance
+    from_wallet = from_user.wallet
+    from_wallet.with_lock do
+      from_wallet.balance -= amount
+      from_wallet.save!
+    end
+
+    # process to_user balance
+    to_wallet = to_user.wallet
+    to_wallet.with_lock do
+      to_wallet.balance += amount
+      to_wallet.save!
+    end
+  end
 end
