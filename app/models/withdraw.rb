@@ -31,9 +31,25 @@ class Withdraw < ApplicationRecord
   # Association through macros
 
   # Validation macros
-  validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :amount, presence: true, numericality: { greater_than: 0 }
 
   # Callbacks
+  before_create :check_amount
+  after_create :update_user_balance
 
   # Other
+
+  private
+
+  def check_amount
+    return errors.add(:amount, 'must be less than balance') if amount > user.wallet.balance
+  end
+
+  def update_user_balance
+    wallet = user.wallet
+    wallet.with_lock do
+      wallet.balance -= amount
+      wallet.save!
+    end
+  end
 end

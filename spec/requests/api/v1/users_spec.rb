@@ -2,9 +2,8 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Wallets', type: :request do
   # initialize test data
-  let!(:wallets) { create_list(:wallet, 2) }
-  let(:user1) { wallets.first.user }
-  let(:user2) { wallets.second.user }
+  let(:user1) { create(:user, :with_wallet, :with_deposit) }
+  let(:user2) { create(:user, :with_wallet, :with_deposit) }
 
   describe 'User can check her wallet balance' do
     it 'returns http success' do
@@ -49,7 +48,7 @@ RSpec.describe 'Api::V1::Wallets', type: :request do
       expect(json['errors']).to include('Amount must be greater than 0')
     end
 
-    it 'returns amount must greater than 0 error message when amount less than 1' do
+    it "returns 'Amount must be greater than 0' when amount less than 1" do
       post "/api/v1/users/#{user1.id}/deposit", params: { amount: -1 }
 
       expect(response).to have_http_status(:unprocessable_entity)
@@ -61,5 +60,44 @@ RSpec.describe 'Api::V1::Wallets', type: :request do
   end
 
   describe 'User can withdraw money from her wallet' do
+    let!(:original_balance) { user1.wallet.balance }
+    let(:withdraw_params) do
+      { amount: user1.wallet.balance - 1 }
+    end
+
+    it 'returns http success' do
+      post "/api/v1/users/#{user1.id}/withdraw", params: withdraw_params
+
+      expect(response).to have_http_status(:success)
+      expect(json['balance']).to eq(original_balance - withdraw_params[:amount].to_i)
+    end
+
+    it "returns 'Couldn't find User' when user_id is invalid_id" do
+      post '/api/v1/users/invalid_id/withdraw', params: withdraw_params
+
+      expect(response).to have_http_status(:not_found)
+      expect(json['error']).to include("Couldn't find User with 'id'=invalid_id")
+    end
+
+    it "returns 'Amount must be greater than 0' when amount does not present" do
+      post "/api/v1/users/#{user1.id}/withdraw", params: { amount: '' }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json['errors']).to include('Amount must be greater than 0')
+    end
+
+    it "returns 'Amount must be greater than 0' when amount less than 1" do
+      post "/api/v1/users/#{user1.id}/withdraw", params: { amount: -1 }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json['errors']).to include('Amount must be greater than 0')
+    end
+
+    it "returns 'Amount must be less than balance' when amount greater than balance" do
+      post "/api/v1/users/#{user1.id}/withdraw", params: { amount: user1.wallet.balance + 1 }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json['errors']).to include('Amount must be less than balance')
+    end
   end
 end

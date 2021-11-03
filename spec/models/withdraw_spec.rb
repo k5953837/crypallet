@@ -28,11 +28,30 @@ RSpec.describe Withdraw, type: :model do
 
   # Callbacks specs
   context 'Callbacks specs' do
+    describe 'before_create' do
+      it '#check_amount' do
+        user = create(:user, :with_wallet, :with_deposit)
+        withdraw = build :withdraw, user: user, amount: user.wallet.balance + 1
+        withdraw.send(:check_amount)
+        expect(withdraw.errors.full_messages).to include('Amount must be less than balance')
+      end
+    end
+
+    describe 'after_create' do
+      it '#update_user_balance' do
+        user = create(:user, :with_wallet, :with_deposit)
+        original_balance = user.wallet.balance
+        withdraw_amount = Faker::Number.number(digits: 2)
+        withdraw = build :withdraw, user: user, amount: withdraw_amount
+        withdraw.send(:update_user_balance)
+        expect(user.wallet.balance).to eq(original_balance - withdraw_amount)
+      end
+    end
   end
 
   # Validations specs
   context 'Validations specs' do
-    it { should validate_numericality_of(:amount).is_greater_than_or_equal_to(0) }
+    it { should validate_numericality_of(:amount).is_greater_than(0) }
     it { should validate_presence_of(:amount) }
   end
 

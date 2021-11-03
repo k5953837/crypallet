@@ -14,9 +14,16 @@ class Api::V1::UsersController < ApplicationController
     end
   end
 
-  def withdraw; end
-
   def transfer; end
+
+  def withdraw
+    withdraw = @user.withdraws.new(amount: params[:amount].to_i)
+    if withdraw.save
+      render json: { balance: @user.wallet.balance }
+    else
+      render json: { errors: withdraw.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
 
   private
 
