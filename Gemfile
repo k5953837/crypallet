@@ -34,6 +34,7 @@ gem 'bootsnap', '>= 1.4.4', require: false
 # gem 'rack-cors'
 
 group :development, :test do
+  gem 'annotate', '~> 3.1'
   gem 'database_cleaner', '~> 2.0'
   gem 'debug', '>= 1.0.0', platforms: %i[ mri mingw x64_mingw ]
   gem 'factory_bot_rails', '~> 6.2'
@@ -46,4 +47,3 @@ group :development do
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem 'spring'
 end
-
