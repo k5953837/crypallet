@@ -31,9 +31,20 @@ class Deposit < ApplicationRecord
   # Association through macros
 
   # Validation macros
-  validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :amount, presence: true, numericality: { greater_than: 0 }
 
   # Callbacks
+  after_create :update_user_balance
 
   # Other
+
+  private
+
+  def update_user_balance
+    wallet = user.wallet
+    wallet.with_lock do
+      wallet.balance += amount
+      wallet.save!
+    end
+  end
 end

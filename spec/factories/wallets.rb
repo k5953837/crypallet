@@ -18,7 +18,7 @@
 #
 FactoryBot.define do
   factory :wallet do
-    balance { Faker::Number.number(digits: 3) }
+    balance { 0 }
     user
   end
 end

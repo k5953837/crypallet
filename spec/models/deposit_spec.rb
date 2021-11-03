@@ -28,11 +28,19 @@ RSpec.describe Deposit, type: :model do
 
   # Callbacks specs
   context 'Callbacks specs' do
+    describe 'after_create' do
+      it '#update_user_balance' do
+        user = create(:user, :with_wallet)
+        deposit = build :deposit, user: user
+        deposit.send(:update_user_balance)
+        expect(user.wallet.balance).to eq(deposit.amount)
+      end
+    end
   end
 
   # Validations specs
   context 'Validations specs' do
-    it { should validate_numericality_of(:amount).is_greater_than_or_equal_to(0) }
+    it { should validate_numericality_of(:amount).is_greater_than(0) }
     it { should validate_presence_of(:amount) }
   end
 
